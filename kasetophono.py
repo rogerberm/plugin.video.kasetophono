@@ -198,6 +198,11 @@ mode = args.get('mode', [None])[0]
 
 if mode is None:
 	loadRootItems()
+	if addon.getSetting('autoroulette') == 'true':
+		print 'trying to autoplay'
+		play_item = xbmcgui.ListItem(path=base_url + '?mode=random')
+		xbmcplugin.setResolvedUrl(addon_handle, True, listitem=play_item)
+		
 elif mode == 'random':
 	loadRandom()
 elif mode == 'folder':
