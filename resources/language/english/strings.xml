@@ -1,0 +1,8 @@
+<strings>
+	<!-- Settings -->
+    <string id="35500">Order?</string>
+    <string id="35501">default</string>
+    <string id="35502">reverse</string>
+    <string id="35503">shuffle</string>
+    <string id="35504">ask</string>
+</strings>
