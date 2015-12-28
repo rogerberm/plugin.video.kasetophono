@@ -133,9 +133,9 @@ def loadPlaylist(playlist_url):
 	order = int(addon.getSetting('order'))
 	print order
 	if order<3:
-		url = 'plugin://plugin.video.youtube/play/?playlist_id={}&order={}'.format(playlist_id,['default', 'reverse', 'shuffle'][order-1])
+		url = 'plugin://plugin.video.youtube/play/?playlist_id={0}&order={1}'.format(playlist_id,['default', 'reverse', 'shuffle'][order-1])
 	else:
-		url = 'plugin://plugin.video.youtube/play/?playlist_id={}'.format(playlist_id)
+		url = 'plugin://plugin.video.youtube/play/?playlist_id={0}'.format(playlist_id)
 	play_item = xbmcgui.ListItem(path=url)
 	xbmcplugin.setResolvedUrl(addon_handle, True, listitem=play_item)
 	#xbmc.executebuiltin('RunPlugin(%s)' % url)
