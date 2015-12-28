@@ -105,30 +105,35 @@ def loadFolder(folderName):
 
 def loadAll():
 	#htmlcontent = getHtml('http://www.kasetophono.com/feeds/posts/summary/-/popular?max-results=50')
-	htmlcontent = getHtml('http://www.kasetophono.com/feeds/posts/default?max-results=1130')
-	entries= common.parseDOM(htmlcontent, 'entry')
+	htmlcontent = getHtml('http://www.kasetophono.com/feeds/posts/default?max-results=11300')
+	entries= common.parseDOM(htmlcontent.replace(': ', ':'), 'entry')
 	for entry in entries:
 		title = common.parseDOM(entry, 'title')
 		thumbnail = common.parseDOM(entry, 'media:thumbnail', ret='url')
 		summary = common.parseDOM(entry, 'summary')
 		categories = common.parseDOM(entry, 'category', ret='term')
-		print categories
 		isBlog = any([category=='blog' for category in categories])
-		if len(categories)>0 and not isBlog:
-			url = common.parseDOM(entry, 'link', attrs={'rel': 'self'}, ret='href')
-			item = xbmcgui.ListItem(title[0])
-			item.setArt({'thumb': thumbnail[0]})
-			item.setProperty('IsPlayable', 'true')
-			if len(summary)>0:
-				item.setInfo('video', {'plot': urllib.unquote_plus(summary[0]), 'plotoutline': summary[0]})
-			xbmcplugin.addDirectoryItem(handle=addon_handle, url=build_url({'mode':'playlist', 'url':url[0]}), listitem=item, isFolder=False)
+		print title
+		if len(categories)>0:
+			if not isBlog:
+				url = common.parseDOM(entry, 'link', attrs={'rel': 'self'}, ret='href')
+				item = xbmcgui.ListItem(title[0].replace('&#39;', '\''))
+				item.setArt({'thumb': thumbnail[0]})
+				item.setProperty('IsPlayable', 'true')
+				if len(summary)>0:
+					item.setInfo('video', {'plot': urllib.unquote_plus(summary[0]), 'plotoutline': summary[0]})
+				xbmcplugin.addDirectoryItem(handle=addon_handle, url=build_url({'mode':'playlist', 'url':url[0]}), listitem=item, isFolder=False)
+		else:
+			print repr(title[0]) + ' doesnt have categories!'
 	xbmcplugin.endOfDirectory(addon_handle)
 
 def loadPlaylist(playlist_url):
 	htmlcontent = getHtml(playlist_url)
 	content = common.parseDOM(htmlcontent, 'content')
 	content = content[0].replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&').replace('&quot', '"')
-	youtube_ref = common.parseDOM(content, 'iframe', ret='src')[0]
+	youtube_ref = common.parseDOM(content, 'iframe', ret='src')
+	print(len(youtube_ref))
+	youtube_ref = youtube_ref[0]
 	#dialog = xbmcgui.Dialog()
 	#dialog.ok('testing', content)
 	print 'Loading playlist ' + playlist_url
