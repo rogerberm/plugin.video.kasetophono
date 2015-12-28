@@ -7,6 +7,7 @@ import xbmcaddon
 import urlparse
 import urllib
 import CommonFunctions
+import random
 
 common = CommonFunctions
 common.plugin = 'kasetophono-1.0'
@@ -78,6 +79,7 @@ def loadRootItems():
 	roulette_url = build_url({'mode':'random'})
 
 	roulette_first = addon.getSetting('roulettefirst') == 'true'
+	roulette_item.setProperty('IsPlayable', 'true')
 	if roulette_first:
 		directory_items = [roulette_item, genres_item, greek_item, mood_item, all_item]
 		directory_urls = [roulette_url, genres_url, greek_url, mood_url, all_url]
@@ -86,11 +88,23 @@ def loadRootItems():
 		directory_urls = [genres_url, greek_url, mood_url, all_url, roulette_url]
 	for (directory_item, directory_url) in zip(directory_items, directory_urls):
 		directory_item.setArt({'fanart':addon_fanart})
-		xbmcplugin.addDirectoryItem(handle=addon_handle, url=directory_url, listitem=directory_item, isFolder=True)
+		xbmcplugin.addDirectoryItem(handle=addon_handle, url=directory_url, listitem=directory_item, isFolder=not directory_item.getProperty('IsPlayable') == 'true')
 	xbmcplugin.endOfDirectory(addon_handle)
 
 def loadRandom():
+	playlist = getRandomPlaylist()
+	playlist_id = playlist['youtube_url']
+	playlist_id = playlist_id[playlist_id.find('=')+1:]
+	order = int(addon.getSetting('order'))
+	if order<3:
+		url = 'plugin://plugin.video.youtube/play/?playlist_id={0}&order={1}'.format(playlist_id,['default', 'reverse', 'shuffle'][order-1])
+	else:
+		url = 'plugin://plugin.video.youtube/play/?playlist_id={0}'.format(playlist_id)
+	play_item = xbmcgui.ListItem(path=url)
+	xbmcplugin.setResolvedUrl(addon_handle, True, listitem=play_item)
+	print 'should play random now'
 	return
+
 
 def loadFolder(folderName):
 	default_topics = findDefaultTopics()[folderName]
@@ -102,6 +116,37 @@ def loadFolder(folderName):
 	placeholder_item = xbmcgui.ListItem('Placeholder for ' + folderName, iconImage='DefaultAudio')
 	xbmcplugin.addDirectoryItem(handle=addon_handle, url=base_url, listitem=placeholder_item)
 	xbmcplugin.endOfDirectory(addon_handle)
+
+
+def getEntryInfo(entry):
+	entry_info = {}
+	entry_info['title'] = common.parseDOM(entry, 'title')[0]
+	entry_info['thumbnail'] = common.parseDOM(entry, 'media:thumbnail', ret='url')[0]
+	entry_info['summary'] = common.parseDOM(entry, 'summary')
+	entry_info['categories'] = common.parseDOM(entry, 'category', ret='term')[0]
+	entry_info['isBlog'] = any([category=='blog' for category in entry_info['categories']])
+	entry_info['url'] = common.parseDOM(entry, 'link', attrs={'rel': 'self'}, ret='href')
+	content = common.parseDOM(entry, 'content')
+	content = content[0].replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&').replace('&quot', '"')
+	entry_info['youtube_url'] = common.parseDOM(content, 'iframe', ret='src')[0]
+	return entry_info
+
+
+def getNumPlaylists():
+	htmlcontent = getHtml('http://www.kasetophono.com/feeds/posts/summary/-/Playlist?max-results=0')
+	num_playlists = common.parseDOM(htmlcontent, 'openSearch:totalResults')
+	num_playlists = int(num_playlists[0])
+	return num_playlists
+
+
+def getRandomPlaylist():
+	num_playlists = getNumPlaylists()
+	selected_playlist = random.randint(1,num_playlists)
+	htmlcontent = getHtml('http://www.kasetophono.com/feeds/posts/default/-/Playlist?start-index={0}&max-results=1'.format(selected_playlist))
+	playlist = common.parseDOM(htmlcontent, 'entry')[0]
+	entry_info = getEntryInfo(playlist)
+	return entry_info			
+
 
 def loadAll():
 	#htmlcontent = getHtml('http://www.kasetophono.com/feeds/posts/summary/-/popular?max-results=50')
