@@ -105,19 +105,23 @@ def loadFolder(folderName):
 
 def loadAll():
 	#htmlcontent = getHtml('http://www.kasetophono.com/feeds/posts/summary/-/popular?max-results=50')
-	htmlcontent = getHtml('http://www.kasetophono.com/feeds/posts/summary/-/rock')
+	htmlcontent = getHtml('http://www.kasetophono.com/feeds/posts/default?max-results=1130')
 	entries= common.parseDOM(htmlcontent, 'entry')
 	for entry in entries:
 		title = common.parseDOM(entry, 'title')
 		thumbnail = common.parseDOM(entry, 'media:thumbnail', ret='url')
 		summary = common.parseDOM(entry, 'summary')
-		url = common.parseDOM(entry, 'link', attrs={'rel': 'self'}, ret='href');
-		item = xbmcgui.ListItem(title[0])
-		item.setArt({'thumb': thumbnail[0]})
-		item.setProperty('IsPlayable', 'true')
-		if len(summary)>0:
-			item.setInfo('video', {'plot': urllib.unquote_plus(summary[0]), 'plotoutline': summary[0]})
-		xbmcplugin.addDirectoryItem(handle=addon_handle, url=build_url({'mode':'playlist', 'url':url[0]}), listitem=item, isFolder=False)
+		categories = common.parseDOM(entry, 'category', ret='term')
+		print categories
+		isBlog = any([category=='blog' for category in categories])
+		if len(categories)>0 and not isBlog:
+			url = common.parseDOM(entry, 'link', attrs={'rel': 'self'}, ret='href')
+			item = xbmcgui.ListItem(title[0])
+			item.setArt({'thumb': thumbnail[0]})
+			item.setProperty('IsPlayable', 'true')
+			if len(summary)>0:
+				item.setInfo('video', {'plot': urllib.unquote_plus(summary[0]), 'plotoutline': summary[0]})
+			xbmcplugin.addDirectoryItem(handle=addon_handle, url=build_url({'mode':'playlist', 'url':url[0]}), listitem=item, isFolder=False)
 	xbmcplugin.endOfDirectory(addon_handle)
 
 def loadPlaylist(playlist_url):
