@@ -2,5 +2,5 @@
 <settings>
 	<setting id='autoroulette' type='bool' default='false' label='Roulette autostart'/>
 	<setting id='roulettefirst' type='bool' default='true' label='Roulette first'/>
-	<setting id='order' type='select' label='35500' lvalues='35501|35502|35503|35504'/>
+	<setting id='order' type='select' label='35500' default='3' lvalues='35501|35502|35503|35504'/>
 </settings>
