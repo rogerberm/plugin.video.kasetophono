@@ -127,7 +127,7 @@ def getEntryInfo(entry):
 	entry_info['isBlog'] = any([category=='blog' for category in entry_info['categories']])
 	entry_info['url'] = common.parseDOM(entry, 'link', attrs={'rel': 'self'}, ret='href')
 	content = common.parseDOM(entry, 'content')
-	content = content[0].replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&').replace('&quot;', '"')
+	content = content[0].replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&').replace('&quot', '"')
 	entry_info['media_art'] = common.parseDOM(content, 'img', ret='src')[0]
 	entry_info['youtube_url'] = common.parseDOM(content, 'iframe', ret='src')[0]
 	return entry_info
@@ -163,39 +163,12 @@ def loadAll():
 		if len(categories)>0:
 			if not isBlog:
 				url = common.parseDOM(entry, 'link', attrs={'rel': 'self'}, ret='href')
-				content = common.parseDOM(entry, 'content')
-				content = content[0].replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&').replace('&quot;', '"')
-				media_art = common.parseDOM(content, 'img', ret='src')
-				item = xbmcgui.ListItem(title[0].replace('&#39;', '\'').replace('&amp;','&'))
-				#item.setIconImage(thumbnail[0]);
-				item.setIconImage(media_art[0]);
-				item.setArt({'thumb': media_art[0], 'poster': media_art[0], 'fanart':media_art[0]})
+				item = xbmcgui.ListItem(title[0].replace('&#39;', '\''))
+				item.setArt({'thumb': thumbnail[0]})
 				item.setProperty('IsPlayable', 'true')
 				if len(summary)>0:
-					#item.setInfo('video', {'plot': urllib.unquote_plus(summary[0]), 'plotoutline': summary[0]})
-					#item.setInfo('music', {'title':'thesong'})
-					print 'a'
-				else:  # Build summary from categories
-					categories = urllib.unquote_plus(reduce(lambda a,b: a + ", " + b, categories))
-					item.setInfo('video', {'genre':categories})
-					#item.setInfo('video', {'director':'Kasetophono', 'plot': '[plot] ' + urllib.unquote_plus(categories), 'album':'[Albummm]', 'artist':['[artisttt]'], 'genre':categories})
-					#metadata = {'album':'Albummm', 'artist':'Kasetophono', 'title': 'titul', 'genre':'musick'}
-					#metadata = { 'title': title[0], 'genre': 'Rock', 'artist': 'artist' } 
-					#metadata = { 'title': title[0], 'Album':['Kasetophono'],'Artist':'Jamie Cullum', 'duration':100, 'tracknumber':4}
-					item.setInfo('music', {'title':title[0]})
-				#xbmcplugin.addDirectoryItem(handle=addon_handle, url=build_url({'mode':'playlist', 'url':url[0]}), listitem=item, isFolder=False)
-				youtube_ref = common.parseDOM(content, 'iframe', ret='src')
-				print(len(youtube_ref))
-				youtube_ref = youtube_ref[0]
-				playlist_id = youtube_ref[youtube_ref.find('=')+1:]
-				order = int(addon.getSetting('order'))
-				print order
-				if order<3:
-					url = 'plugin://plugin.video.youtube/play/?playlist_id={0}&order={1}'.format(playlist_id,['default', 'reverse', 'shuffle'][order-1])
-				else:
-					url = 'plugin://plugin.video.youtube/play/?playlist_id={0}'.format(playlist_id)
-				xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=item, isFolder=False)
-				#xbmcplugin.setResolvedUrl(addon_handle, True, listitem=play_item)
+					item.setInfo('video', {'plot': urllib.unquote_plus(summary[0]), 'plotoutline': summary[0]})
+				xbmcplugin.addDirectoryItem(handle=addon_handle, url=build_url({'mode':'playlist', 'url':url[0]}), listitem=item, isFolder=False)
 		else:
 			print repr(title[0]) + ' doesnt have categories!'
 	xbmcplugin.endOfDirectory(addon_handle)
@@ -203,7 +176,7 @@ def loadAll():
 def loadPlaylist(playlist_url):
 	htmlcontent = getHtml(playlist_url)
 	content = common.parseDOM(htmlcontent, 'content')
-	content = content[0].replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&').replace('&quot;', '"')
+	content = content[0].replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&').replace('&quot', '"')
 	youtube_ref = common.parseDOM(content, 'iframe', ret='src')
 	print(len(youtube_ref))
 	youtube_ref = youtube_ref[0]
@@ -236,9 +209,9 @@ elif mode == 'random':
 elif mode == 'folder':
 	folderName = args.get('foldername', [None])[0]
 	loadFolder(folderName)
-#elif mode == 'playlist':
-#	playlist_url = args.get('url', [None])[0]
-#	loadPlaylist(playlist_url)
+elif mode == 'playlist':
+	playlist_url = args.get('url', [None])[0]
+	loadPlaylist(playlist_url)
 elif mode == 'all':
 	loadAll()
 else:
