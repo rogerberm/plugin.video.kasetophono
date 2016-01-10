@@ -169,7 +169,7 @@ def loadAll():
 				item = xbmcgui.ListItem(title[0].replace('&#39;', '\'').replace('&amp;','&'))
 				#item.setIconImage(thumbnail[0]);
 				item.setIconImage(media_art[0]);
-				item.setArt({'thumb': media_art[0], 'poster': media_art[0], 'fanart':media_art[0]})
+				item.setArt({'thumb': media_art[0], 'poster': media_art[0], 'fanart':media_art[0], 'icon':thumbnail[0]})
 				item.setProperty('IsPlayable', 'true')
 				if len(summary)>0:
 					#item.setInfo('video', {'plot': urllib.unquote_plus(summary[0]), 'plotoutline': summary[0]})
